@@ -202,9 +202,6 @@ export default function Home() {
         <p className="text-2xl mt-4">
           Precios en Col$ (1 USD ≈ {rate.toLocaleString('es-CO')} COP)
         </p>
-        <p className="text-3xl md:text-4xl mt-6 text-red-500 font-black">
-          ¡ÚLTIMO DÍA STEAM WINTER SALE HOY 5 ENE 2026! ⏰🔥
-        </p>
       </header>
 
       <section className="py-16 bg-gradient-to-r from-emerald-900 to-purple-900">
@@ -303,7 +300,7 @@ export default function Home() {
       </section>
 
       <footer className="bg-black py-8 text-center border-t-4 border-cyan-600">
-        <p className="text-xl">© 2026 Ofertas Gamer Colombia • ¡Disfruta las ofertas! ❤️ Último día Winter Sale</p>
+        <p className="text-xl">© 2026 Ofertas Gamer Colombia • ¡Disfruta las ofertas!</p>
       </footer>
     </main>
   );
