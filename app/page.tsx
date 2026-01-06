@@ -4,19 +4,17 @@ import { useState, useEffect } from 'react';
 
 async function fetchDeals() {
   try {
-    // Intentar fetch directo primero
     const res = await fetch(
-      'https://www.cheapshark.com/api/1.0/deals?storeID=1,7,11,23,25&upperPrice=30&metacritic=70&pageSize=40'
+      'https://www.cheapshark.com/api/1.0/deals?storeID=1,7,11,15,23,25&upperPrice=30&metacritic=70&pageSize=40'
     );
     if (!res.ok) throw new Error('Error fetching deals');
     return await res.json();
   } catch (error) {
     console.error('Error directo:', error);
-    // Fallback con proxy CORS
     try {
       const proxyUrl = 'https://api.allorigins.win/raw?url=';
       const apiUrl = encodeURIComponent(
-        'https://www.cheapshark.com/api/1.0/deals?storeID=1,7,11,23,25&upperPrice=30&metacritic=70&pageSize=40'
+        'https://www.cheapshark.com/api/1.0/deals?storeID=1,7,11,15,23,25&upperPrice=30&metacritic=70&pageSize=40'
       );
       const res = await fetch(proxyUrl + apiUrl);
       if (!res.ok) throw new Error('Error con proxy');
@@ -31,10 +29,11 @@ async function fetchDeals() {
 function getStoreName(storeID) {
   const stores = {
     '1': '🟢 Steam',
-    '7': '🔵 Epic Games',
-    '11': '🟡 GOG',
-    '23': '🟠 Humble Bundle',
-    '25': '🟣 Fanatical',
+    '7': '🟡 GOG',
+    '11': '🟠 Humble Store',
+    '15': '🟣 Fanatical',
+    '23': '🔵 GameBillet',
+    '25': '⚡ Epic Games',
   };
   return stores[storeID] || 'Otra tienda';
 }
@@ -106,14 +105,28 @@ function DealSkeleton() {
 }
 
 function Navbar() {
+  const navLinks = [
+    { name: 'Steam', url: 'https://store.steampowered.com/specials', color: 'text-cyan-400 hover:text-cyan-300' },
+    { name: 'Epic', url: 'https://store.epicgames.com/es-ES/free-games', color: 'text-emerald-400 hover:text-emerald-300' },
+    { name: 'Nintendo', url: 'https://www.nintendo.com/es-co/store/offers/', color: 'text-red-400 hover:text-red-300' },
+    { name: 'PlayStation', url: 'https://store.playstation.com/es-co/pages/deals', color: 'text-blue-400 hover:text-blue-300' },
+    { name: 'Xbox', url: 'https://www.xbox.com/es-CO/games/all-games?cat=onsale', color: 'text-green-400 hover:text-green-300' },
+  ];
+
   return (
-    <nav className="bg-black py-4 shadow-2xl border-b-4 border-purple-600">
+    <nav className="bg-black py-4 shadow-2xl border-b-4 border-purple-600 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-center gap-6">
-        <a href="https://store.steampowered.com/specials" target="_blank" rel="noopener noreferrer" className="text-lg font-bold text-cyan-400 hover:text-cyan-300 transition">Steam</a>
-        <a href="https://store.epicgames.com/es-ES/free-games" target="_blank" rel="noopener noreferrer" className="text-lg font-bold text-emerald-400 hover:text-emerald-300 transition">Epic</a>
-        <a href="https://www.nintendo.com/es-co/store/offers/" target="_blank" rel="noopener noreferrer" className="text-lg font-bold text-red-400 hover:text-red-300 transition">Nintendo</a>
-        <a href="https://store.playstation.com/es-co/pages/deals" target="_blank" rel="noopener noreferrer" className="text-lg font-bold text-blue-400 hover:text-blue-300 transition">PlayStation</a>
-        <a href="https://www.xbox.com/es-CO/games/all-games?cat=onsale" target="_blank" rel="noopener noreferrer" className="text-lg font-bold text-green-400 hover:text-green-300 transition">Xbox</a>
+        {navLinks.map((link) => (
+          <a
+            key={link.name}
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`text-lg font-bold ${link.color} transition`}
+          >
+            {link.name}
+          </a>
+        ))}
       </div>
     </nav>
   );
@@ -134,6 +147,40 @@ function SearchBar({ onSearch }) {
         }}
         className="w-full py-4 px-6 bg-gray-900 text-white text-xl rounded-2xl border-4 border-cyan-600 focus:border-cyan-400 outline-none shadow-lg"
       />
+    </div>
+  );
+}
+
+function ConsoleSection({ title, emoji, links, gradient }) {
+  return (
+    <div className={`py-12 ${gradient}`}>
+      <div className="max-w-7xl mx-auto px-6">
+        <h2 className="text-3xl md:text-5xl font-black mb-8 text-center text-white">
+          {emoji} {title} {emoji}
+        </h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {links.map((link, idx) => (
+            <a
+              key={idx}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group bg-black/50 backdrop-blur rounded-3xl p-8 shadow-2xl hover:scale-105 transition-all duration-300 border-4 border-white/20 hover:border-white/50"
+            >
+              <div className="text-6xl mb-4 text-center group-hover:scale-110 transition-transform">
+                {link.icon}
+              </div>
+              <h3 className="text-2xl font-black mb-3 text-center text-white">{link.title}</h3>
+              <p className="text-gray-300 text-center mb-4">{link.description}</p>
+              <div className="text-center">
+                <span className="inline-block bg-white text-black px-6 py-3 rounded-2xl font-bold group-hover:bg-yellow-400 transition-colors">
+                  Ver Ofertas →
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -175,6 +222,69 @@ export default function Home() {
     setFilteredDeals(filtered);
   };
 
+  const playstationLinks = [
+    {
+      title: 'Ofertas PS Plus',
+      description: 'Descuentos exclusivos para miembros PS Plus',
+      icon: '🎮',
+      url: 'https://store.playstation.com/es-co/pages/deals'
+    },
+    {
+      title: 'Ofertas PS5',
+      description: 'Los mejores juegos de PS5 en oferta',
+      icon: '🎯',
+      url: 'https://store.playstation.com/es-co/pages/deals'
+    },
+    {
+      title: 'Ofertas PS4',
+      description: 'Grandes juegos de PS4 a precios increíbles',
+      icon: '🏆',
+      url: 'https://www.playstation.com/es-co/ps4/ps4-games/'
+    }
+  ];
+
+  const xboxLinks = [
+    {
+      title: 'Ofertas Xbox',
+      description: 'Juegos en descuento para Xbox Series X|S y Xbox One',
+      icon: '💚',
+      url: 'https://www.xbox.com/es-CO/games/all-games?cat=onsale'
+    },
+    {
+      title: 'Game Pass',
+      description: 'Catálogo completo de Xbox Game Pass',
+      icon: '🎮',
+      url: 'https://www.xbox.com/es-CO/xbox-game-pass/games'
+    },
+    {
+      title: 'Ofertas Gold',
+      description: 'Descuentos exclusivos para miembros Gold',
+      icon: '⭐',
+      url: 'https://www.xbox.com/es-CO/live/gold'
+    }
+  ];
+
+  const nintendoLinks = [
+    {
+      title: 'Ofertas Switch',
+      description: 'Los mejores juegos de Nintendo Switch en oferta',
+      icon: '🔴',
+      url: 'https://www.nintendo.com/es-co/store/sales-and-deals/'
+    },
+    {
+      title: 'Juegos Indies',
+      description: 'Descubre joyas indies a precios bajos',
+      icon: '💎',
+      url: 'https://www.nintendo.com/es-co/search/#q=Indie&p=1&cat=gme&sort=df'
+    },
+    {
+      title: 'Clásicos Nintendo',
+      description: 'Juegos clásicos y exclusivos de Nintendo',
+      icon: '🌟',
+      url: 'https://www.nintendo.com/es-co/store/sales-and-deals/'
+    }
+  ];
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-black via-indigo-950 to-cyan-950 text-white">
       <Navbar />
@@ -188,6 +298,7 @@ export default function Home() {
         </p>
       </header>
 
+      {/* Epic Games Gratis */}
       <section className="py-16 bg-gradient-to-r from-emerald-900 to-purple-900">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-5xl font-black mb-8 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
@@ -197,7 +308,7 @@ export default function Home() {
             <div className="bg-black rounded-3xl p-8 shadow-2xl hover:scale-105 transition-all duration-300">
               <h3 className="text-2xl md:text-3xl font-black mb-6">Total War: THREE KINGDOMS</h3>
               <a 
-                href="https://store.epicgames.com/es-ES/p/total-war-three-kingdoms" 
+                href="https://store.epicgames.com/es-ES/p/total-war-three-kingdoms-d3bb7a" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-block bg-gradient-to-r from-emerald-600 to-cyan-600 px-8 py-4 rounded-2xl font-black text-xl hover:from-emerald-500 hover:to-cyan-500 transition-all shadow-xl hover:scale-105"
@@ -208,7 +319,7 @@ export default function Home() {
             <div className="bg-black rounded-3xl p-8 shadow-2xl hover:scale-105 transition-all duration-300">
               <h3 className="text-2xl md:text-3xl font-black mb-6">Wildgate</h3>
               <a 
-                href="https://store.epicgames.com/es-ES/p/wildgate" 
+                href="https://store.epicgames.com/es-ES/p/wildgate-standard-edition-b886b5" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-4 rounded-2xl font-black text-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-xl hover:scale-105"
@@ -220,9 +331,10 @@ export default function Home() {
         </div>
       </section>
 
+      {/* PC Deals */}
       <section className="max-w-7xl mx-auto px-6 py-16">
         <h2 className="text-3xl md:text-6xl font-black mb-8 text-center bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
-          🔥 MEJORES OFERTAS WINTER SALE 🔥
+          🔥 MEJORES OFERTAS PC 🔥
         </h2>
 
         <SearchBar onSearch={handleSearch} />
@@ -258,23 +370,76 @@ export default function Home() {
         )}
       </section>
 
-      <section className="py-16 bg-gradient-to-r from-blue-900 to-indigo-900">
+      {/* PlayStation Section */}
+      <ConsoleSection
+        title="OFERTAS PLAYSTATION"
+        emoji="🔵"
+        links={playstationLinks}
+        gradient="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-900"
+      />
+
+      {/* Xbox Section */}
+      <ConsoleSection
+        title="OFERTAS XBOX"
+        emoji="💚"
+        links={xboxLinks}
+        gradient="bg-gradient-to-r from-green-900 via-emerald-900 to-green-900"
+      />
+
+      {/* Nintendo Section */}
+      <ConsoleSection
+        title="OFERTAS NINTENDO"
+        emoji="🔴"
+        links={nintendoLinks}
+        gradient="bg-gradient-to-r from-red-900 via-pink-900 to-red-900"
+      />
+
+      {/* Tips Section */}
+      <section className="py-16 bg-gradient-to-r from-purple-900 to-indigo-900">
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-3xl md:text-5xl font-black mb-8 text-center bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
             💡 Consejos para Gamers en Colombia
           </h2>
-          <ul className="text-lg md:text-xl space-y-3 text-gray-200">
-            <li>✅ En Steam CO, precios regionales son ~30-50% más bajos en USD. ¡Usa cuenta local!</li>
-            <li>⚠️ Evita VPN para compras: puede banearte. Solo para ver deals.</li>
-            <li>🎮 Revisa Epic cada jueves: juegos gratis nuevos.</li>
-            <li>🎯 Para Nintendo/PS/Xbox: checa stores oficiales por deals LATAM.</li>
-            <li>💳 Usa tarjetas como PSE o Nequi para pagos fáciles.</li>
-          </ul>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-black/50 backdrop-blur rounded-2xl p-6 border-2 border-cyan-500/30">
+              <h3 className="text-2xl font-bold mb-4 text-cyan-400">💻 Para PC:</h3>
+              <ul className="space-y-2 text-gray-200">
+                <li>✅ Steam CO tiene precios ~30-50% más bajos</li>
+                <li>✅ Epic Games regala juegos cada jueves</li>
+                <li>✅ GOG tiene juegos DRM-free</li>
+              </ul>
+            </div>
+            <div className="bg-black/50 backdrop-blur rounded-2xl p-6 border-2 border-blue-500/30">
+              <h3 className="text-2xl font-bold mb-4 text-blue-400">🎮 Para Consolas:</h3>
+              <ul className="space-y-2 text-gray-200">
+                <li>✅ PS Plus/Game Pass tienen ofertas exclusivas</li>
+                <li>✅ Nintendo eShop tiene sales cada temporada</li>
+                <li>✅ Compara precios físicos vs digitales</li>
+              </ul>
+            </div>
+            <div className="bg-black/50 backdrop-blur rounded-2xl p-6 border-2 border-green-500/30">
+              <h3 className="text-2xl font-bold mb-4 text-green-400">💳 Pagos:</h3>
+              <ul className="space-y-2 text-gray-200">
+                <li>✅ Usa PSE, Nequi o tarjetas locales</li>
+                <li>✅ Evita VPN para compras (puede causar ban)</li>
+                <li>✅ Verifica comisiones bancarias</li>
+              </ul>
+            </div>
+            <div className="bg-black/50 backdrop-blur rounded-2xl p-6 border-2 border-purple-500/30">
+              <h3 className="text-2xl font-bold mb-4 text-purple-400">⏰ Mejores Fechas:</h3>
+              <ul className="space-y-2 text-gray-200">
+                <li>✅ Winter/Summer Sales (Steam)</li>
+                <li>✅ Black Friday (todas las tiendas)</li>
+                <li>✅ Aniversarios de juegos</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 
       <footer className="bg-black py-8 text-center border-t-4 border-cyan-600">
-        <p className="text-lg md:text-xl">© 2026 Ofertas Gamer Colombia • ¡Disfruta las ofertas!</p>
+        <p className="text-lg md:text-xl mb-2">© 2026 Ofertas Gamer Colombia</p>
+        <p className="text-gray-400">Encontrando las mejores ofertas para gamers colombianos 🇨🇴</p>
       </footer>
     </main>
   );
